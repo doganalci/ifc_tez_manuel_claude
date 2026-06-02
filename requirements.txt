@@ -1,0 +1,11 @@
+# Faz 1 (IFC üretimi) ve Faz 4 (görselleştirme) için bağımlılıklar
+ifcopenshell>=0.8
+numpy
+# Görselleştirme (Jupyter)
+jupyter
+ipykernel
+ipywidgets>=8
+pythreejs
+ipycytoscape
+networkx
+matplotlib
