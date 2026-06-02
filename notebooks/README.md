@@ -46,10 +46,23 @@ view(ifc_path, labels="...meta.json")             # etiket dosyasından
 
 Renk katmanı: `violation` 🔴, `decoy` 🟡 (IFC değişmedi), `compliant` 🟢 (uyumlu ekleme).
 
+## ÖNEMLİ — Klonladıktan sonra tek seferlik kurulum (nbstripout)
+
+Notebook'ları çalıştırınca çıktılar dosyaya yazılır; bu da `git pull`'da çakışma
+yaratır. Bunu **otomatik** önlemek için repoyu klonlayınca bir kez çalıştır:
+
+```bash
+nbstripout --install      # repo kökünde; .git filtresini kurar
+```
+
+Bundan sonra git, notebook **çıktılarını yok sayar** — çalıştırsan da `pull`/`push`
+sorunsuz olur, çıktılar asla commit'lenmez. (Repodaki `.gitattributes` filtreyi
+zaten tanımlar; bu komut sadece yerel git'e bağlar.)
+
+> Zaten çalıştırıp çakışma aldıysan: `git checkout -- notebooks/<nb>.ipynb`
+> (çıktılar gider, kod kalır) sonra `git pull`. nbstripout kurulduysa bu sorun tekrar olmaz.
+
 ## Notlar
 
-- **Çıktılar push edilmez:** Notebook'ları commit'lemeden önce çıktıları
-  temizleyin (`jupyter nbconvert --clear-output --inplace <nb>.ipynb`). Çıktılar
-  ve widget state'i dinamik kabul edilir.
 - `_build_*.py` betikleri ilgili notebook'u programatik üretir (yeniden üretilebilirlik).
 - Üretilen IFC/veri `data/` altına yazılır (push edilmez).

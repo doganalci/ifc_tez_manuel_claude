@@ -21,3 +21,5 @@ dependencies:
   - ipycytoscape
   - networkx
   - matplotlib
+  # Notebook çıktılarını git'ten otomatik temizler (pull çakışmasını önler)
+  - nbstripout
