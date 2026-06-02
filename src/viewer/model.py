@@ -59,6 +59,36 @@ class ViewerModel:
     ifc_lines: list[str]                      # STEP dosyasının satırları
     id_to_lineidx: dict[int, int]             # STEP #id -> satır indeksi
     line_to_ekey: dict[int, str]              # STEP #id -> ekey (IFC tıklaması için)
+    ifc_file: object = None                   # açık ifcopenshell dosyası (Pset okuma)
+
+    def psets(self, ekey: str) -> dict:
+        """Elemanın property set'leri (Pset_*)."""
+        el = self.elements.get(ekey)
+        if not el or self.ifc_file is None:
+            return {}
+        import ifcopenshell.util.element as eu
+        try:
+            return eu.get_psets(self.ifc_file.by_id(el.ifc_id)) or {}
+        except Exception:
+            return {}
+
+    def dimensions(self, ekey: str) -> Optional[tuple[float, float, float]]:
+        """Eleman sınır kutusu boyutu (genişlik, derinlik, yükseklik) metre."""
+        el = self.elements.get(ekey)
+        if not el or el.bbox_min is None:
+            return None
+        d = el.bbox_max - el.bbox_min
+        return (float(d[0]), float(d[1]), float(d[2]))
+
+    def neighbors(self, ekey: str) -> list[tuple[str, str, str]]:
+        """Komşular: (komşu_ekey, ilişki, yön['->'|'<-'])."""
+        out = []
+        for s, d, r in self.edges:
+            if s == ekey:
+                out.append((d, r, "->"))
+            elif d == ekey:
+                out.append((s, r, "<-"))
+        return out
 
     def element_by_ifc_id(self, ifc_id: int) -> Optional[Element]:
         """Bir STEP #id'sinden ilgili elemanı bul (IFC görünümünden seçim)."""
@@ -199,7 +229,7 @@ def load_viewer_model(path: str | Path) -> ViewerModel:
     return ViewerModel(
         path=path, schema=f.schema, elements=elements, edges=edges,
         ifc_lines=raw_lines, id_to_lineidx=id_to_lineidx,
-        line_to_ekey=line_to_ekey,
+        line_to_ekey=line_to_ekey, ifc_file=f,
     )
 
 

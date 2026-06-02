@@ -39,6 +39,14 @@ class Opening:
 
 
 @dataclass
+class Column:
+    name: str
+    at: tuple[float, float]     # plan konumu (x, y)
+    size: float = 0.3          # kare kesit kenarı (m)
+    height: float = 3.0
+
+
+@dataclass
 class Room:
     name: str
     # eksen-hizalı dikdörtgen oda (iç net alan köşeleri)
@@ -58,6 +66,7 @@ class BuildingLayout:
     walls: list[Wall] = field(default_factory=list)
     openings: list[Opening] = field(default_factory=list)
     rooms: list[Room] = field(default_factory=list)
+    columns: list[Column] = field(default_factory=list)
     params: dict = field(default_factory=dict)
 
 
@@ -103,12 +112,13 @@ def medium_layout(
                 width=0.9, height=2.1, sill=0.0),
         # Üst duvarda her oda için pencere (DIS-Ust start=(width,depth)->(0,depth))
         # distance, start'tan ölçülür: R3 merkezi width - b/2 ...
+        # Boyut: oda ~32 m², R2 oranı (≥%10) için pencere ≥ ~3.2 m² (2.4×1.4=3.36)
         Opening("Pencere-R3", "window", "DIS-Ust", distance=width - (b + width) / 2,
-                width=1.2, height=1.2, sill=0.9),
+                width=2.4, height=1.4, sill=0.9),
         Opening("Pencere-R2", "window", "DIS-Ust", distance=width - (a + b) / 2,
-                width=1.2, height=1.2, sill=0.9),
+                width=2.4, height=1.4, sill=0.9),
         Opening("Pencere-R1", "window", "DIS-Ust", distance=width - a / 2,
-                width=1.2, height=1.2, sill=0.9),
+                width=2.4, height=1.4, sill=0.9),
     ]
 
     rooms = [

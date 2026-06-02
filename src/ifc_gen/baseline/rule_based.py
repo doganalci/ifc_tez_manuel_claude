@@ -58,7 +58,7 @@ def layout_to_ifc(layout: BuildingLayout) -> ifcopenshell.file:
 
     # Proje / birimler / geometri bağlamı
     project = run("root.create_entity", f, ifc_class="IfcProject", name=layout.name)
-    run("unit.assign_unit", f)  # varsayılan SI (metre)
+    run("unit.assign_unit", f, length={"is_metric": True, "raw": "METERS"})  # metre
     model_ctx = run("context.add_context", f, context_type="Model")
     body = run(
         "context.add_context", f, context_type="Model",
@@ -126,6 +126,8 @@ def layout_to_ifc(layout: BuildingLayout) -> ifcopenshell.file:
 
         if op.kind == "door":
             door = run("root.create_entity", f, ifc_class="IfcDoor", name=op.name)
+            door.OverallWidth = op.width
+            door.OverallHeight = op.height
             d_rep = run("geometry.add_door_representation", f, context=body,
                         overall_height=op.height, overall_width=op.width)
             run("geometry.assign_representation", f, product=door, representation=d_rep)
@@ -135,6 +137,8 @@ def layout_to_ifc(layout: BuildingLayout) -> ifcopenshell.file:
             run("feature.add_filling", f, opening=opening, element=door)
         else:  # window
             win = run("root.create_entity", f, ifc_class="IfcWindow", name=op.name)
+            win.OverallWidth = op.width
+            win.OverallHeight = op.height
             wn_rep = run("geometry.add_window_representation", f, context=body,
                          overall_height=op.height, overall_width=op.width)
             run("geometry.assign_representation", f, product=win, representation=wn_rep)
@@ -154,6 +158,18 @@ def layout_to_ifc(layout: BuildingLayout) -> ifcopenshell.file:
         run("aggregate.assign_object", f, products=[space], relating_object=storey)
         run("geometry.edit_object_placement", f, product=space,
             matrix=_placement_matrix(0, 0, 0, 0.0))
+
+    # --- Kolonlar (uyumlu ekleme için) ---
+    for col in layout.columns:
+        column = run("root.create_entity", f, ifc_class="IfcColumn", name=col.name)
+        h = col.size / 2.0
+        c_rep = run("geometry.add_slab_representation", f, context=body,
+                    depth=col.height,
+                    polyline=[(-h, -h), (h, -h), (h, h), (-h, h)])
+        run("geometry.assign_representation", f, product=column, representation=c_rep)
+        run("spatial.assign_container", f, products=[column], relating_structure=storey)
+        run("geometry.edit_object_placement", f, product=column,
+            matrix=_placement_matrix(col.at[0], col.at[1], 0.0, 0.0))
 
     return f
 

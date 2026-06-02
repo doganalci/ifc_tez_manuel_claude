@@ -32,21 +32,25 @@ LABEL_COLOR = {                   # ihlal katmanı
 }
 _DEFAULT = "#bdbdbd"
 
-# Tam ekran: container'a .ifc-viewer-root sınıfı eklenir; buton en yakın bu
-# container'ı Fullscreen API ile büyütür. Fullscreen'de canvas genişliğe yayılır.
+# Tam ekran: container'a .ifc-viewer-root sınıfı eklenir. Buton, tarayıcının
+# tüm penceresini dolduran güvenilir bir "fixed overlay" tam ekran açar
+# (Fullscreen API bazı Jupyter ortamlarında engellenir; bu her yerde çalışır).
 _FULLSCREEN_CSS = """
 <style>
-.ifc-viewer-root:fullscreen { background:#1e1e1e; padding:10px; overflow:auto; }
-.ifc-viewer-root:-webkit-full-screen { background:#1e1e1e; padding:10px; }
-.ifc-viewer-root:fullscreen canvas { width:100% !important; height:auto !important; }
+.ifc-viewer-root.ifc-fs {
+  position:fixed; inset:0; z-index:99999; background:#1e1e1e;
+  overflow:auto; padding:12px; box-sizing:border-box;
+}
+.ifc-viewer-root.ifc-fs canvas { width:100% !important; height:auto !important; }
+.ifc-viewer-root.ifc-fs .ifc-text-panel { height:78vh !important; }
 </style>
 """
 _FULLSCREEN_BUTTON = """
-<button style="padding:4px 10px;cursor:pointer;border:1px solid #888;
-border-radius:4px;background:#2d2d2d;color:#eee"
+<button style="padding:5px 12px;cursor:pointer;border:1px solid #888;
+border-radius:4px;background:#2d2d2d;color:#eee;font-weight:bold"
 onclick="(function(b){var r=b.closest('.ifc-viewer-root');if(!r)return;
-if(document.fullscreenElement){document.exitFullscreen();}
-else{(r.requestFullscreen||r.webkitRequestFullscreen).call(r);}})(this)">
+var on=r.classList.toggle('ifc-fs');b.textContent=on?'✕ Tam ekrandan çık':'⛶ Tam ekran';
+window.dispatchEvent(new Event('resize'));})(this)">
 ⛶ Tam ekran</button>
 """
 
@@ -189,9 +193,62 @@ def ifc_text_html(vm: ViewerModel, highlight: set[int] | None = None,
         else:
             rows.append(f'<div style="color:#bbb;padding:0 4px">'
                         f'<span style="color:#666">{i+1:>5}</span>  {ln}</div>')
-    return ('<div style="font-family:monospace;font-size:11px;height:420px;'
-            'overflow:auto;background:#1e1e1e;border:1px solid #333">'
-            + "".join(rows) + "</div>")
+    return ('<div class="ifc-text-panel" style="font-family:monospace;'
+            'font-size:11px;height:460px;overflow:auto;background:#1e1e1e;'
+            'border:1px solid #333">' + "".join(rows) + "</div>")
+
+
+# ============================================================================
+# Detay paneli — seçilen node'un içeriği
+# ============================================================================
+def detail_html(vm: ViewerModel, ekey: Optional[str],
+                labels: dict[str, str] | None = None) -> str:
+    labels = labels or {}
+    if not ekey or ekey not in vm.elements:
+        return ('<div style="font-size:12px;color:#888;padding:8px;'
+                'border:1px solid #333;background:#1e1e1e">'
+                'Bir node / 3D eleman / IFC öğesi seç → içeriği burada görünür.</div>')
+    el = vm.elements[ekey]
+    rows = [f"<b>{el.name}</b> <span style='color:#888'>({el.ifc_type})</span>"]
+    rows.append(f"<span style='color:#888'>GlobalId:</span> <code>{el.ekey}</code>"
+                f" &nbsp; <span style='color:#888'>STEP:</span> #{el.ifc_id}")
+
+    dims = vm.dimensions(ekey)
+    if dims:
+        rows.append(f"<span style='color:#888'>Boyut (G×D×Y):</span> "
+                    f"{dims[0]:.2f} × {dims[1]:.2f} × {dims[2]:.2f} m")
+
+    if ekey in labels:
+        st = labels[ekey]
+        col = LABEL_COLOR.get(st, "#888")
+        tr = {"violation": "🔴 İhlal", "decoy": "🟡 Sahte (decoy)",
+              "compliant": "🟢 Uyumlu ekleme"}.get(st, st)
+        rows.append(f"<span style='color:#888'>Etiket:</span> "
+                    f"<span style='color:{col};font-weight:bold'>{tr}</span>")
+
+    psets = vm.psets(ekey)
+    if psets:
+        ps = []
+        for pname, props in psets.items():
+            kv = ", ".join(f"{k}={v}" for k, v in props.items() if k != "id")
+            ps.append(f"<div style='margin-left:8px'><i>{pname}</i>: {kv}</div>")
+        rows.append("<span style='color:#888'>Pset'ler:</span>" + "".join(ps))
+
+    nbrs = vm.neighbors(ekey)
+    if nbrs:
+        items = []
+        for nek, rel, dirn in nbrs[:12]:
+            arrow = "→" if dirn == "->" else "←"
+            items.append(f"<li>{arrow} <b>{vm.elements[nek].name}</b> "
+                         f"<span style='color:#888'>({rel})</span></li>")
+        more = f"<li style='color:#888'>… +{len(nbrs)-12}</li>" if len(nbrs) > 12 else ""
+        rows.append(f"<span style='color:#888'>İlişkiler ({len(nbrs)}):</span>"
+                    f"<ul style='margin:2px 0 0 0;padding-left:18px'>"
+                    + "".join(items) + more + "</ul>")
+
+    return ('<div style="font-size:12px;color:#ddd;padding:8px;line-height:1.5;'
+            'border:1px solid #333;background:#1e1e1e;height:460px;overflow:auto">'
+            + "<br>".join(rows) + "</div>")
 
 
 # ============================================================================
@@ -215,7 +272,12 @@ class InteractiveViewer:
 
         self.renderer, self.meshes, self.picker = build_threejs(self.vm, self.labels)
         self.cyto = build_cytoscape(self.vm, self.labels)
+        try:
+            self.cyto.layout.height = "460px"
+        except Exception:
+            pass
         self.ifc_box = W.HTML(value=ifc_text_html(self.vm))
+        self.detail_box = W.HTML(value=detail_html(self.vm, None, self.labels))
 
         # IFC tarafından seçim: eleman seçici (satır tıklamasının pratik karşılığı)
         opts = [("— seçim yok —", "")] + [
@@ -245,7 +307,9 @@ class InteractiveViewer:
         mid = W.VBox([W.HTML("<b>Graph (node'lar sürüklenebilir)</b>"), self.cyto],
                      layout=flex)
         right = W.VBox([W.HTML("<b>IFC</b>"), self.ifc_box], layout=flex)
-        panels = W.HBox([left, mid, right],
+        detail = W.VBox([W.HTML("<b>Detay (seçilen eleman)</b>"), self.detail_box],
+                        layout=flex)
+        panels = W.HBox([left, mid, right, detail],
                         layout=W.Layout(flex_flow="row wrap", width="100%"))
 
         self.widget = W.VBox([style, toolbar, legend, panels, self.status],
@@ -291,6 +355,7 @@ class InteractiveViewer:
         set_graph_selection(self.cyto, self.vm, ekey)
         idxs = set(self.vm.highlight_line_indices(ekey)) if ekey else set()
         self.ifc_box.value = ifc_text_html(self.vm, idxs)
+        self.detail_box.value = detail_html(self.vm, ekey, self.labels)
         if getattr(self, "selector", None) is not None:
             self.selector.value = ekey or ""
         if ekey:

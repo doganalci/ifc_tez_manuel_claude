@@ -198,18 +198,20 @@ kaldır" → sıfırlanır. Aynısı 3D'den ve IFC satırından tıklayınca da 
 | Faz | Adım | Durum | Notebook / Modül |
 |-----|------|-------|------------------|
 | 0 | Proje iskeleti + `data/` ayrımı | ✅ Bitti | — |
-| 1 | 1.1 Kural tabanlı baseline | ✅ Bitti | `src/ifc_gen/baseline/` |
-| 4 | Görüntüleme modülü (3D+graph+IFC senkron) | ✅ Bitti | `notebooks/faz4_gorsellestirme.ipynb` |
+| 1 | 1.1 Kural tabanlı baseline (metre, kurallara uygun) | ✅ Bitti | `src/ifc_gen/baseline/` |
+| 4 | Görüntüleme modülü (3D+graph+IFC senkron, detay paneli, tam ekran) | ✅ Bitti | `notebooks/faz4_gorsellestirme.ipynb` |
+| 4 | İhlal/decoy/compliant renk katmanı (🔴/🟡/🟢) | ✅ Bitti | `view(..., labels=meta.json)` |
+| — | Kural seti (R1/R2/R3) + tespit | ✅ Bitti | `docs/kural_seti.md`, `src/ifc_gen/inject/rules.py` |
+| 3 | 3.1 Kural tabanlı ihlal ekleme | ✅ Bitti | `notebooks/faz3_1_kural_tabanli_ihlal.ipynb` |
 | 1 | 1.2 Tamamen LLM baseline | ⬜ Sırada | — |
 | 1 | 1.3 Hibrit baseline | ⬜ | — |
 | 2 | 2.1 LLM ihlal havuzu | ⬜ | — |
 | 2 | 2.2 LLM+doküman ihlal havuzu | ⬜ | — |
 | 2 | 2.3 RAG ihlal havuzu | ⬜ | — |
 | 2 | 2.4 RAG+LLM ihlal havuzu | ⬜ | — |
-| 3 | 3.1 Kural tabanlı ihlal ekleme | ⬜ | — |
 | 3 | 3.2 Tamamen LLM ihlal ekleme | ⬜ | — |
 | 3 | 3.3 Hibrit ihlal ekleme | ⬜ | — |
 | 3 | 3.4 Havuzdan seç → LLM → motor | ⬜ | — |
-| 4 | İhlal/decoy/compliant renk katmanı | ⬜ (altyapı hazır: `labels=`) | — |
+| — | R4 (kullanıcı kuralı) — `docs/kural_seti.md` placeholder | ⬜ | — |
 
 > Her adım bittiğinde bu tabloyu güncelleyip commit/push edeceğiz.

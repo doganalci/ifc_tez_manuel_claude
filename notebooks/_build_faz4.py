@@ -117,7 +117,8 @@ c.append(new_markdown_cell(
     "- **IFC öğe** açılır listesinden seç → diğer ikisi güncellenir.\n"
     "- **Seçimi kaldır** → tüm renkler sıfırlanır.\n"
     "- Graph node'ları fareyle **sürüklenebilir**.\n"
-    "- **⛶ Tam ekran** butonu → görünümü tam ekrana alır (tekrar bas / Esc ile çıkar).\n"
+    "- **Detay** paneli → seçilen elemanın tip/GlobalId/boyut/Pset/ilişkilerini gösterir.\n"
+    "- **⛶ Tam ekran** butonu → görünümü tarayıcı penceresini dolduracak şekilde açar (tekrar bas ile çıkar).\n"
     "\n"
     "> İnteraktif görünüm için Jupyter (Lab/Notebook) çekirdeği ve `ipywidgets` etkin olmalı."
 ))
