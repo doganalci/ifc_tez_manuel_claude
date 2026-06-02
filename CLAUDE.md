@@ -26,6 +26,8 @@ src/
     baseline/           # Faz 1: kural tabanlı baseline
       layout.py         #   BuildingLayout, Wall/Opening/Room/Column, medium_layout()
       rule_based.py     #   layout_to_ifc(), build_baseline()
+      procedural.py     #   BaselineConfig + generate_baselines() (parametrik üretici:
+                        #     3 oda+koridor+salon, dikdörtgen/kare, çok varyant)
     inject/             # Faz 3: ihlal ekleme
       rules.py          #   RULES eşikleri + ölçüm + detect() (tespit)
       rule_based.py     #   ViolationInjector (Faz 3.1)

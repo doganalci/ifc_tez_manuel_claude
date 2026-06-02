@@ -89,13 +89,15 @@ def detect(vm, rules: dict | None = None) -> list[Finding]:
             out.append(Finding(ek, "R1_min_door_width", w < thr - 1e-6, w, thr,
                                f"genişlik {w:.2f} m {'<' if w < thr else '≥'} {thr:.2f} m"))
 
-    # R2 — pencere/taban oranı (oda bazında)
+    # R2 — pencere/taban oranı (oda bazında; koridor/sirkülasyon hariç)
     r2 = rules.get("R2_window_floor_ratio")
     if r2:
         thr = r2["min_ratio"]
         for ek, el in vm.elements.items():
             if el.ifc_type != "IfcSpace":
                 continue
+            if "koridor" in (el.name or "").lower() or "corridor" in (el.name or "").lower():
+                continue  # sirkülasyon mekânı için doğal aydınlatma aranmaz
             floor = _room_floor_area(vm, ek)
             win_area = sum(_window_area(vm, nek)
                            for nek, rel, _ in vm.neighbors(ek)
