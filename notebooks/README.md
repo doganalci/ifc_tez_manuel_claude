@@ -28,7 +28,9 @@ jupyter lab
 
 | Notebook | Faz | Ne yapar |
 |----------|-----|----------|
-| `faz4_gorsellestirme.ipynb` | 4 | IFC → 3D model + graph + IFC metni, **senkron seçim**. Bir görünümde seçim diğerlerini renklendirir; node'lar sürüklenebilir; "Seçimi kaldır" sıfırlar; **⛶ Tam ekran**; **🔴/🟡/🟢 ihlal katmanı**. |
+| `faz1_1_baseline_kural_tabanli.ipynb` | 1.1 | **Kural tabanlı baseline IFC** üretimi (modüler fonksiyonlar): `medium_layout` → `build_baseline`. Şema/geometri doğrulama + kural uyumu (0 ihlal) + görselleştirme. |
+| `faz3_1_kural_tabanli_ihlal.ipynb` | 3.1 | Baseline'a **kural tabanlı ihlal ekleme**: 🔴 ihlal / 🟡 decoy / 🟢 uyumlu ekleme → `violated.ifc` + `meta.json`. Ground-truth ↔ tespit eşleşmesi. |
+| `faz4_gorsellestirme.ipynb` | 4 | IFC → 3D model + graph + IFC metni, **senkron seçim**. Detay paneli; node'lar sürüklenebilir; **⛶ Tam ekran**; **🔴/🟡/🟢 ihlal katmanı**. |
 
 ## Görselleştirmeyi başka notebook'tan çağırma
 
