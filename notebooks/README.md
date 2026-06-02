@@ -6,9 +6,19 @@ edip çalıştırır.
 
 ## Kurulum
 
+**Conda (önerilen — `ifcopenshell` conda-forge'dan sorunsuz gelir):**
+
+```bash
+conda env create -f ../environment.yml
+conda activate ifc-tez
+jupyter lab
+```
+
+**veya pip:**
+
 ```bash
 pip install -r ../requirements.txt
-jupyter lab    # veya: jupyter notebook
+jupyter lab
 ```
 
 İnteraktif 3D/graph için `ipywidgets`, `pythreejs`, `ipycytoscape` etkin olmalı

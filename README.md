@@ -21,6 +21,20 @@ Sıralı plan ve akış diyagramları: [`docs/akis_diyagrami.md`](docs/akis_diya
 3. **Baseline'a ihlal ekleme** — kural tabanlı / LLM / hibrit / havuzdan seç→LLM→motor
 4. **Görüntüleme modülü** — 3D + graph + IFC senkron seçim
 
+## Kurulum
+
+**Conda (önerilen):**
+```bash
+conda env create -f environment.yml
+conda activate ifc-tez
+jupyter lab
+```
+
+**pip:**
+```bash
+pip install -r requirements.txt
+```
+
 ## Klasör Yapısı
 
 ```

@@ -1,0 +1,23 @@
+# Conda ortamı — Faz 1 (IFC üretimi) ve Faz 4 (görselleştirme)
+#
+# Oluştur:   conda env create -f environment.yml
+# Etkinleştir: conda activate ifc-tez
+# Güncelle:   conda env update -f environment.yml --prune
+#
+# Tüm paketler conda-forge'da var (pip'e gerek yok). ifcopenshell dahil.
+name: ifc-tez
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - ifcopenshell>=0.8
+  - numpy
+  # Jupyter + interaktif görselleştirme
+  - jupyterlab>=4
+  - notebook>=7
+  - ipykernel
+  - ipywidgets>=8
+  - pythreejs
+  - ipycytoscape
+  - networkx
+  - matplotlib
