@@ -28,7 +28,23 @@ jupyter lab
 
 | Notebook | Faz | Ne yapar |
 |----------|-----|----------|
-| `faz4_gorsellestirme.ipynb` | 4 | IFC → 3D model + graph + IFC metni, **senkron seçim**. Bir görünümde seçim diğerlerini renklendirir; node'lar sürüklenebilir; "Seçimi kaldır" sıfırlar. |
+| `faz4_gorsellestirme.ipynb` | 4 | IFC → 3D model + graph + IFC metni, **senkron seçim**. Bir görünümde seçim diğerlerini renklendirir; node'lar sürüklenebilir; "Seçimi kaldır" sıfırlar; **⛶ Tam ekran**; **🔴/🟡/🟢 ihlal katmanı**. |
+
+## Görselleştirmeyi başka notebook'tan çağırma
+
+Viewer bir modüldür; tek satırla çağrılır:
+
+```python
+import sys; sys.path.insert(0, "../src")   # src'yi yola ekle
+from viewer import view
+
+view("data/baseline_ifc/xxx.ifc")                 # IFC yolundan
+view(vm)                                          # hazır ViewerModel
+view(ifc_path, labels={ekey: "violation"})        # ihlal renkleriyle
+view(ifc_path, labels="...meta.json")             # etiket dosyasından
+```
+
+Renk katmanı: `violation` 🔴, `decoy` 🟡 (IFC değişmedi), `compliant` 🟢 (uyumlu ekleme).
 
 ## Notlar
 

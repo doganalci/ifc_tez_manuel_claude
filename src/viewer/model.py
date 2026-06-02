@@ -201,3 +201,26 @@ def load_viewer_model(path: str | Path) -> ViewerModel:
         ifc_lines=raw_lines, id_to_lineidx=id_to_lineidx,
         line_to_ekey=line_to_ekey,
     )
+
+
+def load_labels(source) -> dict[str, str]:
+    """İhlal etiketlerini (annotations) {ekey: status} sözlüğüne çevir.
+
+    Kabul edilen biçimler:
+      - JSON yolu (str/Path) veya hazır dict
+      - {"annotations": [{"ekey": "...", "status": "violation|decoy|compliant"}, ...]}
+      - {"<ekey>": "violation", ...}  (düz eşleme)
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    data = source
+    if isinstance(source, (str, _Path)) or hasattr(source, "__fspath__"):
+        data = _json.loads(_Path(source).read_text(encoding="utf-8"))
+
+    if isinstance(data, dict) and "annotations" in data:
+        return {a["ekey"]: a["status"] for a in data["annotations"]
+                if a.get("ekey") and a.get("status")}
+    if isinstance(data, dict):
+        return {k: v for k, v in data.items() if isinstance(v, str)}
+    return {}

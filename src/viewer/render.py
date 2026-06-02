@@ -32,6 +32,24 @@ LABEL_COLOR = {                   # ihlal katmanı
 }
 _DEFAULT = "#bdbdbd"
 
+# Tam ekran: container'a .ifc-viewer-root sınıfı eklenir; buton en yakın bu
+# container'ı Fullscreen API ile büyütür. Fullscreen'de canvas genişliğe yayılır.
+_FULLSCREEN_CSS = """
+<style>
+.ifc-viewer-root:fullscreen { background:#1e1e1e; padding:10px; overflow:auto; }
+.ifc-viewer-root:-webkit-full-screen { background:#1e1e1e; padding:10px; }
+.ifc-viewer-root:fullscreen canvas { width:100% !important; height:auto !important; }
+</style>
+"""
+_FULLSCREEN_BUTTON = """
+<button style="padding:4px 10px;cursor:pointer;border:1px solid #888;
+border-radius:4px;background:#2d2d2d;color:#eee"
+onclick="(function(b){var r=b.closest('.ifc-viewer-root');if(!r)return;
+if(document.fullscreenElement){document.exitFullscreen();}
+else{(r.requestFullscreen||r.webkitRequestFullscreen).call(r);}})(this)">
+⛶ Tam ekran</button>
+"""
+
 
 def _base_color(el: Element, labels: dict[str, str]) -> str:
     if el.ekey in labels and labels[el.ekey] in LABEL_COLOR:
@@ -214,11 +232,43 @@ class InteractiveViewer:
         self.selector.observe(self._on_select, names="value")
         self.clear_btn.on_click(lambda _b: self.select(None))
 
-        left = W.VBox([W.HTML("<b>3D Model</b>"), self.renderer,
-                       W.HBox([self.selector, self.clear_btn]), self.status])
-        mid = W.VBox([W.HTML("<b>Graph (node'lar sürüklenebilir)</b>"), self.cyto])
-        right = W.VBox([W.HTML("<b>IFC</b>"), self.ifc_box])
-        self.widget = W.HBox([left, mid, right])
+        # Tam ekran: tarayıcı Fullscreen API'si (kernel'e gitmeden, doğrudan JS)
+        style = W.HTML(_FULLSCREEN_CSS)
+        fs_btn = W.HTML(_FULLSCREEN_BUTTON)
+        legend = W.HTML(self._legend_html())
+
+        toolbar = W.HBox([fs_btn, self.selector, self.clear_btn],
+                         layout=W.Layout(align_items="center", flex_flow="row wrap"))
+
+        flex = W.Layout(flex="1 1 0%", min_width="280px")
+        left = W.VBox([W.HTML("<b>3D Model</b>"), self.renderer], layout=flex)
+        mid = W.VBox([W.HTML("<b>Graph (node'lar sürüklenebilir)</b>"), self.cyto],
+                     layout=flex)
+        right = W.VBox([W.HTML("<b>IFC</b>"), self.ifc_box], layout=flex)
+        panels = W.HBox([left, mid, right],
+                        layout=W.Layout(flex_flow="row wrap", width="100%"))
+
+        self.widget = W.VBox([style, toolbar, legend, panels, self.status],
+                             layout=W.Layout(width="100%"))
+        self.widget.add_class("ifc-viewer-root")
+
+    def _legend_html(self) -> str:
+        def chip(c, t):
+            return (f'<span style="display:inline-block;width:11px;height:11px;'
+                    f'background:{c};border:1px solid #333;margin:0 3px 0 10px;'
+                    f'vertical-align:middle"></span>{t}')
+        base = ("<div style='font-size:11px;color:#888'>Tipler:"
+                + chip(TYPE_COLOR["IfcWall"], "Duvar")
+                + chip(TYPE_COLOR["IfcDoor"], "Kapı")
+                + chip(TYPE_COLOR["IfcWindow"], "Pencere")
+                + chip(TYPE_COLOR["IfcSlab"], "Döşeme")
+                + chip(SELECT_COLOR, "Seçili"))
+        if self.labels:
+            base += ("&nbsp;&nbsp;|&nbsp;&nbsp;İhlal katmanı:"
+                     + chip(LABEL_COLOR["violation"], "🔴 İhlal")
+                     + chip(LABEL_COLOR["decoy"], "🟡 Sahte (decoy)")
+                     + chip(LABEL_COLOR["compliant"], "🟢 Uyumlu ekleme"))
+        return base + "</div>"
 
     # --- olay işleyiciler ---
     def _on_pick(self, change):
@@ -255,3 +305,32 @@ class InteractiveViewer:
         from IPython.display import display
         display(self.widget)
         return self.widget
+
+
+# ============================================================================
+# Tek-çağrı API — başka notebook'lardan kolay kullanım
+# ============================================================================
+def view(source, labels=None, display: bool = True) -> "InteractiveViewer":
+    """Herhangi bir notebook'tan tek satırla görselleştir.
+
+        from viewer import view
+        v = view("data/baseline_ifc/xxx.ifc")          # IFC yolu
+        v = view(vm, labels={ekey: "violation"})       # ViewerModel + ihlal renkleri
+
+    `source`: IFC dosya yolu (str/Path) ya da hazır ViewerModel.
+    `labels`: {ekey: "violation"|"decoy"|"compliant"} — viewer'da 🔴/🟡/🟢.
+    """
+    from .model import load_viewer_model, ViewerModel, load_labels
+
+    if isinstance(source, ViewerModel):
+        vm = source
+    else:
+        vm = load_viewer_model(source)
+
+    if isinstance(labels, (str,)) or hasattr(labels, "__fspath__"):
+        labels = load_labels(labels)
+
+    iv = InteractiveViewer(vm, labels=labels)
+    if display:
+        iv.show()
+    return iv

@@ -101,28 +101,73 @@ c.append(new_code_cell(
 ))
 
 c.append(new_markdown_cell(
-    "## 5) Tam interaktif arayüz (canlı Jupyter)\n"
-    "Aşağıdaki hücre üç görünümü birlikte açar:\n"
+    "## 5) Tam interaktif arayüz — tek satır: `view(...)`\n"
+    "Görselleştirme artık bir **modül**. Herhangi bir notebook'tan tek satırla çağrılır:\n"
     "\n"
+    "```python\n"
+    "from viewer import view\n"
+    "view('data/baseline_ifc/xxx.ifc')          # IFC yolu\n"
+    "view(vm)                                    # hazır ViewerModel\n"
+    "view(ifc_path, labels={ekey: 'violation'}) # ihlal renkleriyle\n"
+    "```\n"
+    "\n"
+    "Etkileşim:\n"
     "- **Graph** node'una tıkla → o node, 3D'deki eleman ve IFC satırları renk değiştirir.\n"
     "- **3D** modelde bir mesh'e tıkla → graph ve IFC senkron güncellenir.\n"
     "- **IFC öğe** açılır listesinden seç → diğer ikisi güncellenir.\n"
     "- **Seçimi kaldır** → tüm renkler sıfırlanır.\n"
     "- Graph node'ları fareyle **sürüklenebilir**.\n"
+    "- **⛶ Tam ekran** butonu → görünümü tam ekrana alır (tekrar bas / Esc ile çıkar).\n"
     "\n"
-    "> Not: İnteraktif görünüm için Jupyter (Lab/Notebook) çekirdeği ve `ipywidgets` "
-    "etkin olmalı. `labels` parametresiyle ileride ihlal/decoy/compliant renkleri eklenecek."
+    "> İnteraktif görünüm için Jupyter (Lab/Notebook) çekirdeği ve `ipywidgets` etkin olmalı."
 ))
 c.append(new_code_cell(
-    "from viewer.render import InteractiveViewer\n"
-    "viewer = InteractiveViewer(vm)   # labels={} -> baseline'da ihlal yok\n"
-    "viewer.show()"
+    "from viewer import view\n"
+    "viewer = view(vm)            # baseline (ihlal yok). ⛶ Tam ekran butonu üstte.\n"
+    "# viewer = view(ifc_path)    # dosya yolundan da olur"
 ))
 c.append(new_code_cell(
     "# Programatik seçim de mümkün (test/otomasyon):\n"
     "viewer.select(secili)\n"
     "print('Seçili:', vm.elements[viewer.selected].name)\n"
     "# viewer.select(None)  # seçimi kaldır"
+))
+
+c.append(new_markdown_cell(
+    "## 6) İhlal katmanı — 🔴 ihlal · 🟡 sahte (decoy) · 🟢 uyumlu ekleme\n"
+    "Viewer, `labels={ekey: durum}` ile elemanları ihlal durumuna göre renklendirir:\n"
+    "\n"
+    "| Renk | Durum | Anlamı |\n"
+    "|------|-------|--------|\n"
+    "| 🔴 | `violation` | Gerçek ihlal (IFC geometrisi kuralı bozacak şekilde değişti) |\n"
+    "| 🟡 | `decoy` | Sahte etiket — ihlal denmiş ama IFC değişmemiş |\n"
+    "| 🟢 | `compliant` | Kural bozmayan, uyumlu yeni ekleme |\n"
+    "\n"
+    "Aşağıda **elle örnek etiketlerle** renk katmanını gösteriyoruz. (Gerçek etiketler "
+    "Faz 3 ihlal ekleme adımında `*.meta.json` olarak üretilecek; o zaman "
+    "`view(ifc_path, labels='...meta.json')` ile otomatik gelecek.)"
+))
+c.append(new_code_cell(
+    "# Örnek: bir kapı 🔴, bir duvar 🟡 (decoy), bir mekan 🟢 (compliant)\n"
+    "ornek_kapi  = next(e.ekey for e in vm.elements.values() if e.ifc_type=='IfcDoor')\n"
+    "ornek_duvar = next(e.ekey for e in vm.elements.values() if e.ifc_type=='IfcWall')\n"
+    "ornek_mekan = next(e.ekey for e in vm.elements.values() if e.ifc_type=='IfcSpace')\n"
+    "ornek_labels = {ornek_kapi: 'violation', ornek_duvar: 'decoy', ornek_mekan: 'compliant'}\n"
+    "for ek, st in ornek_labels.items():\n"
+    "    print(f'  {st:10s} -> {vm.elements[ek].ifc_type:9s} {vm.elements[ek].name}')"
+))
+c.append(new_code_cell(
+    "# Statik önizleme (her ortamda görünür): ihlal renkleriyle 3D + graph\n"
+    "fig = plt.figure(figsize=(13, 5))\n"
+    "ax1 = fig.add_subplot(121, projection='3d')\n"
+    "static.plot_3d(vm, labels=ornek_labels, ax=ax1)\n"
+    "ax2 = fig.add_subplot(122)\n"
+    "static.plot_graph(vm, labels=ornek_labels, ax=ax2)\n"
+    "plt.tight_layout(); plt.show()"
+))
+c.append(new_code_cell(
+    "# İnteraktif: ihlal katmanlı viewer (legend'de 🔴/🟡/🟢 belirir)\n"
+    "view(vm, labels=ornek_labels)"
 ))
 
 nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
