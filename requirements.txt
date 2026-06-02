@@ -2,7 +2,8 @@
 ifcopenshell>=0.8
 numpy
 # Görselleştirme (Jupyter)
-jupyter
+jupyterlab>=4
+notebook>=7
 ipykernel
 ipywidgets>=8
 pythreejs
