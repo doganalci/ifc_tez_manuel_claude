@@ -11,6 +11,14 @@ adım. Bir adımı bitirip onaylamadan diğerine geçmiyoruz.
 > 4. Görüntüleme modülü
 >
 > GAT eğitimi, performans analizi vb. **bu turda yok.**
+>
+> **Çalışma tarzı:** Tek bir arayüz YOK. Her adımı **Jupyter notebook**'ta tek tek
+> yapıp gösteriyoruz (`notebooks/`). Motorlar `src/` altında, notebook'lar onları
+> import edip çalıştırır.
+>
+> **Sıra notu:** Faz 1.1 motoru (baseline IFC) hazır olunca, viewer'a girdi
+> oluştuğu için **Faz 4 (görselleştirme) öne alındı** ve yapıldı. Kalan üretim
+> yöntemleri sırayla devam edecek.
 
 ---
 
@@ -187,20 +195,21 @@ kaldır" → sıfırlanır. Aynısı 3D'den ve IFC satırından tıklayınca da 
 
 ## İlerleme Takibi
 
-| Faz | Adım | Durum |
-|-----|------|-------|
-| 0 | Proje iskeleti + `data/` ayrımı | ✅ Bitti |
-| 1 | 1.1 Kural tabanlı baseline | ⬜ Sırada |
-| 1 | 1.2 Tamamen LLM baseline | ⬜ |
-| 1 | 1.3 Hibrit baseline | ⬜ |
-| 2 | 2.1 LLM ihlal havuzu | ⬜ |
-| 2 | 2.2 LLM+doküman ihlal havuzu | ⬜ |
-| 2 | 2.3 RAG ihlal havuzu | ⬜ |
-| 2 | 2.4 RAG+LLM ihlal havuzu | ⬜ |
-| 3 | 3.1 Kural tabanlı ihlal ekleme | ⬜ |
-| 3 | 3.2 Tamamen LLM ihlal ekleme | ⬜ |
-| 3 | 3.3 Hibrit ihlal ekleme | ⬜ |
-| 3 | 3.4 Havuzdan seç → LLM → motor | ⬜ |
-| 4 | Görüntüleme modülü | ⬜ |
+| Faz | Adım | Durum | Notebook / Modül |
+|-----|------|-------|------------------|
+| 0 | Proje iskeleti + `data/` ayrımı | ✅ Bitti | — |
+| 1 | 1.1 Kural tabanlı baseline | ✅ Bitti | `src/ifc_gen/baseline/` |
+| 4 | Görüntüleme modülü (3D+graph+IFC senkron) | ✅ Bitti | `notebooks/faz4_gorsellestirme.ipynb` |
+| 1 | 1.2 Tamamen LLM baseline | ⬜ Sırada | — |
+| 1 | 1.3 Hibrit baseline | ⬜ | — |
+| 2 | 2.1 LLM ihlal havuzu | ⬜ | — |
+| 2 | 2.2 LLM+doküman ihlal havuzu | ⬜ | — |
+| 2 | 2.3 RAG ihlal havuzu | ⬜ | — |
+| 2 | 2.4 RAG+LLM ihlal havuzu | ⬜ | — |
+| 3 | 3.1 Kural tabanlı ihlal ekleme | ⬜ | — |
+| 3 | 3.2 Tamamen LLM ihlal ekleme | ⬜ | — |
+| 3 | 3.3 Hibrit ihlal ekleme | ⬜ | — |
+| 3 | 3.4 Havuzdan seç → LLM → motor | ⬜ | — |
+| 4 | İhlal/decoy/compliant renk katmanı | ⬜ (altyapı hazır: `labels=`) | — |
 
 > Her adım bittiğinde bu tabloyu güncelleyip commit/push edeceğiz.
