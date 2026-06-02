@@ -1,0 +1,40 @@
+# ============================================================
+#  DİNAMİK VERİ — PUSH EDİLMEZ
+#  Aşağıdaki her şey lokalde kalır, GitHub'a gitmez.
+# ============================================================
+
+# data/ klasörünün tüm içeriği (üretilen IFC'ler, ihlal havuzu,
+# loglar, cache, ChromaDB, eğitim çıktıları, meta.json'lar...)
+data/*
+!data/.gitkeep
+!data/README.md
+
+# Loglar
+*.log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+
+# ML / üretim çıktıları (her ihtimale karşı, kök seviyede de)
+*.ifc
+*.ckpt
+*.pt
+*.pth
+cache/
+chroma/
+*.sqlite
+*.sqlite3
+*.db
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
